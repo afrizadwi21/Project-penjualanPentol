@@ -28,16 +28,16 @@ router.get('/check-history', async (req, res) => {
     let queryPreorder = ''
 
     if (phone) {
-      const normalized = normalizePhone(phone)
       const raw = phone.replace(/\D/g, '')
-      const filter = `or=(customer_phone.eq.${normalized},customer_phone.eq.${raw})`
+      const filter = `customer_phone=ilike.*${raw}*`
       queryOrder = filter
       queryPreorder = filter
-      console.log('[DEBUG] Phone filter used:', filter)
+      console.log('[DEBUG] Phone filter used (flexible):', filter)
     } else if (name) {
-      queryOrder = `customer_name=ilike.*${name}*`
-      queryPreorder = `customer_name=ilike.*${name}*`
-      console.log('[DEBUG] Name filter used:', queryOrder)
+      const filter = `customer_name=ilike.*${name}*`
+      queryOrder = filter
+      queryPreorder = filter
+      console.log('[DEBUG] Name filter used:', filter)
     }
     
     const [orders, preorders] = await Promise.all([
