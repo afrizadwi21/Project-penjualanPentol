@@ -1,4 +1,9 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+const getApiBase = () => {
+  let base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+  if (!base.startsWith('http')) base = 'https://' + base
+  return base.replace(/\/$/, '')
+}
+const API_BASE = getApiBase()
 
 export const getAdminToken = () => localStorage.getItem('adminAccessToken') || ''
 
