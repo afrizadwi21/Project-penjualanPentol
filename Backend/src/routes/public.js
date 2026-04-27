@@ -21,6 +21,7 @@ router.get('/products', async (req, res) => {
 router.get('/check-history', async (req, res) => {
   try {
     const { phone, name } = req.query
+    console.log('[DEBUG] History search request:', { phone, name })
     if (!phone && !name) return jsonError(res, 400, 'Nomor telepon atau nama diperlukan')
     
     let queryOrder = ''
@@ -32,9 +33,11 @@ router.get('/check-history', async (req, res) => {
       const filter = `or=(customer_phone.eq.${normalized},customer_phone.eq.${raw})`
       queryOrder = filter
       queryPreorder = filter
+      console.log('[DEBUG] Phone filter used:', filter)
     } else if (name) {
       queryOrder = `customer_name=ilike.*${name}*`
       queryPreorder = `customer_name=ilike.*${name}*`
+      console.log('[DEBUG] Name filter used:', queryOrder)
     }
     
     const [orders, preorders] = await Promise.all([
@@ -48,11 +51,14 @@ router.get('/check-history', async (req, res) => {
       })
     ])
 
+    console.log('[DEBUG] Found records:', { ordersCount: orders?.length, preordersCount: preorders?.length })
+
     res.json({ 
       ok: true, 
       data: { orders, preorders } 
     })
   } catch (e) {
+    console.error('[DEBUG] History search error:', e.message)
     jsonError(res, e.status || 500, 'Gagal mengambil riwayat', e.message)
   }
 })
