@@ -28,8 +28,10 @@ router.get('/check-history', async (req, res) => {
 
     if (phone) {
       const normalized = normalizePhone(phone)
-      queryOrder = `customer_phone=eq.${normalized}`
-      queryPreorder = `customer_phone=eq.${normalized}`
+      const raw = phone.replace(/\D/g, '')
+      const filter = `or(customer_phone.eq.${normalized},customer_phone.eq.${raw})`
+      queryOrder = filter
+      queryPreorder = filter
     } else if (name) {
       queryOrder = `customer_name=ilike.*${name}*`
       queryPreorder = `customer_name=ilike.*${name}*`
