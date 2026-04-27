@@ -33,8 +33,8 @@ router.get('/check-history', async (req, res) => {
       queryOrder = filter
       queryPreorder = filter
     } else if (name) {
-      queryOrder = `customer_name=ilike.*${name}*`
-      queryPreorder = `customer_name=ilike.*${name}*`
+      queryOrder = `customer_name=ilike.%${name}%`
+      queryPreorder = `customer_name=ilike.%${name}%`
     }
     
     const [orders, preorders] = await Promise.all([
