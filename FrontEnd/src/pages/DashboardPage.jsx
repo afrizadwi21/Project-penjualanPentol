@@ -66,7 +66,7 @@ const DashboardPage = () => {
             setLoadError('')
         } catch (e) {
             console.error('Fetch error:', e)
-            setLoadError('Gagal memuat data. Cek koneksi backend.')
+            setLoadError(e.message)
         }
     }
 

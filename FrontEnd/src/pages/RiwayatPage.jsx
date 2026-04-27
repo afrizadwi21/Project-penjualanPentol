@@ -74,6 +74,7 @@ const RiwayatPage = () => {
       }
     } catch (e) {
       console.error('Gagal memuat riwayat:', e)
+      alert(e.message)
     } finally {
       setLoading(false)
     }
