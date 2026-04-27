@@ -29,15 +29,14 @@ router.get('/check-history', async (req, res) => {
 
     if (phone) {
       const raw = phone.replace(/\D/g, '')
+      // Coba cari yang persis sama atau mengandung nomor tersebut
       const filter = `customer_phone=ilike.*${raw}*`
       queryOrder = filter
       queryPreorder = filter
-      console.log('[DEBUG] Phone filter used (flexible):', filter)
     } else if (name) {
       const filter = `customer_name=ilike.*${name}*`
       queryOrder = filter
       queryPreorder = filter
-      console.log('[DEBUG] Name filter used:', filter)
     }
     
     const [orders, preorders] = await Promise.all([

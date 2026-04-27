@@ -26,15 +26,16 @@ async function requireAdmin(req, res, next) {
     })
     
     if (!authResp.ok) {
-        console.log('[DEBUG] Auth validation failed. Status:', authResp.status)
-        return jsonError(res, 401, 'Unauthorized')
+        const errBody = await authResp.text()
+        console.log('[DEBUG] Auth validation failed. Status:', authResp.status, 'Body:', errBody)
+        return jsonError(res, 401, `Unauthorized: Supabase Auth error ${authResp.status}`)
     }
     
     const user = await authResp.json()
     const userId = user?.id
     console.log('[DEBUG] Authenticated User ID:', userId)
     
-    if (!userId) return jsonError(res, 401, 'Unauthorized')
+    if (!userId) return jsonError(res, 401, 'Unauthorized: No User ID found in token')
 
     // 2) Check admin flag in profiles (service role, server-side only)
     console.log('[DEBUG] Querying profiles for isAdmin...')
