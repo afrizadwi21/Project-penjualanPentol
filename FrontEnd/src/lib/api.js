@@ -9,7 +9,6 @@ export const getAdminToken = () => localStorage.getItem('adminAccessToken') || '
 
 export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
   const url = `${API_BASE}${path}`
-  console.log(`[DEBUG] Fetching: ${method} ${url}`)
   
   try {
     const res = await fetch(url, {
@@ -25,18 +24,20 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
     const data = text ? (() => { try { return JSON.parse(text) } catch { return text } })() : null
 
     if (!res.ok) {
-      console.error(`[DEBUG] Fetch Error ${res.status}:`, data)
-      const msg = typeof data === 'object' && data && data.message ? data.message : `HTTP ${res.status}`
+      const msg = data?.message || `Error ${res.status}: ${res.statusText}`
       const err = new Error(msg)
       err.status = res.status
       err.data = data
       throw err
     }
     
-    console.log(`[DEBUG] Fetch Success:`, data)
     return data
   } catch (err) {
-    console.error(`[DEBUG] Network/Fetch Error:`, err.message)
+    console.error(`[API ERROR] Failed to fetch ${url}:`, err.message)
+    // Berikan pesan yang lebih membantu user
+    if (err.message.includes('Failed to fetch')) {
+      throw new Error(`Koneksi Gagal: Tidak bisa menghubungi ${url}. Pastikan URL Backend benar dan server Railway sudah 'Active'.`)
+    }
     throw err
   }
 }
