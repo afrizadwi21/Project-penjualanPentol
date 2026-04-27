@@ -60,6 +60,14 @@ const RiwayatPage = () => {
         } else {
           setOrders(res.data.orders || [])
           setPreorders(res.data.preorders || [])
+          
+          // Auto switch tab jika order kosong tapi preorder ada
+          if ((!res.data.orders || res.data.orders.length === 0) && res.data.preorders?.length > 0) {
+            setSearchParams({ tab: 'preorder' })
+          } else if (res.data.orders?.length > 0 && (!res.data.preorders || res.data.preorders.length === 0)) {
+            setSearchParams({ tab: 'order' })
+          }
+
           if (targetPhone) localStorage.setItem('lastCheckedPhone', targetPhone)
           if (targetName) localStorage.setItem('lastCheckedName', targetName)
         }
@@ -254,7 +262,9 @@ const RiwayatPage = () => {
           {tab === 'order' ? (
             dataOrder.length === 0 ? (
               <div className="bg-gray-900 border border-dashed border-gray-800 rounded-3xl p-10 text-center">
-                <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-500">Masukkan nomor telepon untuk melihat order</p>
+                <p className="text-sm font-black uppercase tracking-[0.3em] text-gray-500">
+                  {phone || name ? 'Tidak ada riwayat Order Langsung' : 'Masukkan nomor telepon untuk melihat order'}
+                </p>
               </div>
             ) : (
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
