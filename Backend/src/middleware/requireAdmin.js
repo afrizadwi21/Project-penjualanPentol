@@ -3,20 +3,22 @@ const { jsonError } = require('../lib/http')
 const { supabaseRest } = require('../lib/supabaseRest')
 
 async function requireAdmin(req, res, next) {
+  const auth = req.get('authorization') || ''
+  const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : ''
+  console.log('[requireAdmin] Token received:', token ? 'Yes (len=' + token.length + ')' : 'No')
+
+  if (!token) return jsonError(res, 401, 'Token tidak ditemukan. Silakan login terlebih dahulu.')
+
+  if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
+    console.error('[requireAdmin] SUPABASE_URL atau SUPABASE_ANON_KEY tidak di-set di Railway!')
+    return jsonError(res, 500, 'Konfigurasi server tidak lengkap (env var hilang).')
+  }
+
+  // 1) Validasi token ke Supabase Auth
+  let user
   try {
-    const auth = req.get('authorization') || ''
-    const token = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7).trim() : ''
-    console.log('[DEBUG] Token received:', token ? 'Yes' : 'No')
-    
-    if (!token) return jsonError(res, 401, 'Missing Authorization Bearer token')
-
-    if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
-        console.log('[DEBUG] Server misconfigured')
-        return jsonError(res, 500, 'Server misconfigured')
-    }
-
-    // 1) Validate token with Supabase Auth
     const authUrl = `${env.SUPABASE_URL.replace(/\/$/, '')}/auth/v1/user`
+    console.log('[requireAdmin] Menghubungi Supabase Auth:', authUrl)
     const authResp = await fetch(authUrl, {
       method: 'GET',
       headers: {
@@ -24,48 +26,48 @@ async function requireAdmin(req, res, next) {
         authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!authResp.ok) {
-        const errBody = await authResp.text()
-        console.log('[DEBUG] Auth validation failed. Status:', authResp.status, 'Body:', errBody)
-        return jsonError(res, 401, `Sesi login tidak valid (Supabase: ${authResp.status}). Silakan login ulang.`)
-    }
-    
-    const user = await authResp.json()
-    const userId = user?.id
-    console.log('[DEBUG] Authenticated User ID:', userId)
-    
-    if (!userId) return jsonError(res, 401, 'ID Pengguna tidak ditemukan dalam token.')
-
-    // 2) Check admin flag in profiles (service role, server-side only)
-    console.log('[DEBUG] Querying profiles for isAdmin for ID:', userId)
-    let rows
-    try {
-        rows = await supabaseRest('profiles', {
-            query: `select=is_admin&id=eq.${encodeURIComponent(userId)}&limit=1`,
-            useService: true,
-        })
-    } catch (dbErr) {
-        console.error('[DEBUG] Database profile check failed:', dbErr.message)
-        return jsonError(res, 500, 'Gagal memverifikasi status Admin di database.', dbErr.message)
-    }
-    
-    console.log('[DEBUG] Query result:', JSON.stringify(rows))
-    
-    const isAdmin = Array.isArray(rows) && rows[0] && (rows[0].is_admin === true || rows[0].is_admin === 'true')
-    console.log('[DEBUG] isAdmin check:', isAdmin)
-    
-    if (!isAdmin) {
-        return jsonError(res, 403, 'Anda bukan Admin. Akses ditolak.')
+      const errBody = await authResp.text()
+      console.log('[requireAdmin] Supabase menolak token. Status:', authResp.status, '| Body:', errBody)
+      // 401 dari Supabase = token benar-benar tidak valid / kedaluwarsa
+      return jsonError(res, 401, `Sesi tidak valid (Supabase: ${authResp.status}). Silakan login ulang.`)
     }
 
-    req.user = { id: userId, email: user?.email || null }
-
-    next()
-  } catch (e) {
-    console.error('[DEBUG] Error in requireAdmin Middleware:', e.message)
-    jsonError(res, 401, 'Unauthorized: ' + e.message)
+    user = await authResp.json()
+  } catch (fetchErr) {
+    // Ini adalah network error - Railway tidak bisa menghubungi Supabase
+    console.error('[requireAdmin] NETWORK ERROR saat menghubungi Supabase:', fetchErr.message)
+    return jsonError(res, 503, 'Server tidak bisa menghubungi layanan autentikasi (Supabase). Coba beberapa saat lagi.')
   }
+
+  const userId = user?.id
+  console.log('[requireAdmin] User ID terautentikasi:', userId)
+  if (!userId) return jsonError(res, 401, 'ID pengguna tidak ditemukan dalam token.')
+
+  // 2) Cek flag is_admin di tabel profiles
+  let rows
+  try {
+    rows = await supabaseRest('profiles', {
+      query: `select=is_admin&id=eq.${encodeURIComponent(userId)}&limit=1`,
+      useService: true,
+    })
+  } catch (dbErr) {
+    console.error('[requireAdmin] Gagal query profiles dari Supabase:', dbErr.message)
+    return jsonError(res, 503, 'Server tidak bisa mengambil data profil dari database.', dbErr.message)
+  }
+
+  console.log('[requireAdmin] Profile result:', JSON.stringify(rows))
+
+  const isAdmin = Array.isArray(rows) && rows[0] && (rows[0].is_admin === true || rows[0].is_admin === 'true')
+  console.log('[requireAdmin] isAdmin:', isAdmin)
+
+  if (!isAdmin) {
+    return jsonError(res, 403, 'Akses ditolak: akun ini bukan Admin.')
+  }
+
+  req.user = { id: userId, email: user?.email || null }
+  next()
 }
 
 module.exports = { requireAdmin }

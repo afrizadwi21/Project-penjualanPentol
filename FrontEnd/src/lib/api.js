@@ -8,7 +8,8 @@ const API_BASE = getApiBase()
 export const getAdminToken = () => localStorage.getItem('adminAccessToken') || ''
 export const getAdminRefreshToken = () => localStorage.getItem('adminRefreshToken') || ''
 
-export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
+// isRetry: flag untuk mencegah infinite loop saat retry setelah refresh token
+export async function apiFetch(path, { method = 'GET', body, headers, isRetry = false } = {}) {
   const url = `${API_BASE}${path}`
   
   try {
@@ -25,18 +26,29 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
     const data = text ? (() => { try { return JSON.parse(text) } catch { return text } })() : null
 
     if (!res.ok) {
-      // Jika 401 (Unauthorized) di endpoint admin, coba refresh token dulu
-      if (res.status === 401 && path.includes('/admin/') && !path.includes('/refresh')) {
+      const msg = data?.message || `Error ${res.status}: ${res.statusText}`
+      const err = new Error(msg)
+      err.status = res.status
+      err.data = data
+
+      // 503 = server tidak bisa menghubungi Supabase (masalah Railway, BUKAN sesi kita)
+      // Jangan redirect ke login!
+      if (res.status === 503) {
+        console.error('[API] Server error (503):', msg)
+        throw err
+      }
+
+      // 401 di endpoint admin = token kedaluwarsa, coba refresh dulu
+      if (res.status === 401 && path.includes('/admin/') && !isRetry) {
         const refreshToken = getAdminRefreshToken()
         if (refreshToken) {
-          console.log('[API] Mencoba refresh token...')
+          console.log('[API] Token 401, mencoba refresh...')
           try {
             const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
             const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
             
             if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-              console.error('[API] Gagal refresh: VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY belum di-set di environment variables Vercel.')
-              throw new Error('Missing Supabase Config')
+              throw new Error('VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum di-set di Vercel!')
             }
 
             const refreshResp = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/token?grant_type=refresh_token`, {
@@ -47,43 +59,46 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
             
             const refreshData = await refreshResp.json()
             if (refreshResp.ok && refreshData.access_token) {
-              console.log('[API] Refresh token berhasil!')
+              console.log('[API] Refresh token berhasil! Mengulang request...')
               localStorage.setItem('adminAccessToken', refreshData.access_token)
-              localStorage.setItem('adminRefreshToken', refreshData.refresh_token)
+              localStorage.setItem('adminRefreshToken', refreshData.refresh_token || refreshToken)
               
-              // Ulangi request asli dengan token baru
+              // Ulangi request asli dengan token baru (isRetry=true agar tidak loop)
               return apiFetch(path, { 
                 method, 
                 body, 
-                headers: { ...headers, Authorization: `Bearer ${refreshData.access_token}` } 
+                headers: { ...headers, Authorization: `Bearer ${refreshData.access_token}` },
+                isRetry: true,
               })
+            } else {
+              console.warn('[API] Refresh token gagal:', refreshData?.error_description || 'unknown')
             }
           } catch (re) {
-            console.error('[API] Gagal refresh token:', re.message)
+            console.error('[API] Error saat refresh token:', re.message)
           }
         }
 
-        // Jika gagal refresh atau tidak ada refresh token, paksa logout
-        console.warn('[API] Sesi tidak bisa diperbarui. Mengarahkan ke login...')
+        // Refresh gagal atau tidak ada refresh token → paksa logout
+        console.warn('[API] Sesi tidak bisa diperbarui. Logout...')
         localStorage.removeItem('adminAccessToken')
+        localStorage.removeItem('adminRefreshToken')
         localStorage.removeItem('currentRole')
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/admin/login?error=session_expired'
         }
       }
 
-      const msg = data?.message || `Error ${res.status}: ${res.statusText}`
-      const err = new Error(msg)
-      err.status = res.status
-      err.data = data
       throw err
     }
     
     return data
   } catch (err) {
-    console.error(`[API ERROR] Gagal menghubungi ${url}:`, err.message)
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Network Error')) {
-      throw new Error(`Koneksi Terputus: Tidak bisa menghubungi server (${url}). Pastikan server Railway Anda sedang 'Active' dan tidak dalam proses 'Deploying'.`)
+    // Hanya log jika bukan error 401/403/503 yang sudah kita handle
+    if (!err.status || err.status >= 500) {
+      console.error(`[API ERROR] Gagal menghubungi ${url}:`, err.message)
+    }
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Network request failed')) {
+      throw new Error(`Koneksi Terputus: Server Railway tidak bisa dihubungi. Pastikan status Railway 'Active'.`)
     }
     throw err
   }
