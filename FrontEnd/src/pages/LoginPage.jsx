@@ -10,7 +10,13 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('error') === 'session_expired') return 'Sesi Anda telah berakhir. Silakan login kembali.'
+    }
+    return ''
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()

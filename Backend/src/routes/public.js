@@ -28,9 +28,9 @@ router.get('/check-history', async (req, res) => {
     let queryPreorder = ''
 
     if (phone) {
-      const raw = phone.replace(/\D/g, '')
+      const normalized = normalizePhone(phone)
       // Menggunakan % sebagai wildcard standar SQL
-      const filter = `customer_phone=ilike.%${raw}%`
+      const filter = `customer_phone=ilike.%${normalized}%`
       queryOrder = filter
       queryPreorder = filter
     } else if (name) {
