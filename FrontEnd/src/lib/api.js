@@ -34,6 +34,11 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
             const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
             const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
             
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+              console.error('[API] Gagal refresh: VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY belum di-set di environment variables Vercel.')
+              throw new Error('Missing Supabase Config')
+            }
+
             const refreshResp = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/token?grant_type=refresh_token`, {
               method: 'POST',
               headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
@@ -54,7 +59,7 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
               })
             }
           } catch (re) {
-            console.error('[API] Gagal refresh token:', re)
+            console.error('[API] Gagal refresh token:', re.message)
           }
         }
 
@@ -76,9 +81,9 @@ export async function apiFetch(path, { method = 'GET', body, headers } = {}) {
     
     return data
   } catch (err) {
-    console.error(`[API ERROR] Failed to fetch ${url}:`, err.message)
-    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      throw new Error(`Koneksi Gagal: Tidak bisa menghubungi server. Pastikan URL Backend benar.`)
+    console.error(`[API ERROR] Gagal menghubungi ${url}:`, err.message)
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Network Error')) {
+      throw new Error(`Koneksi Terputus: Tidak bisa menghubungi server (${url}). Pastikan server Railway Anda sedang 'Active' dan tidak dalam proses 'Deploying'.`)
     }
     throw err
   }

@@ -28,35 +28,43 @@ async function requireAdmin(req, res, next) {
     if (!authResp.ok) {
         const errBody = await authResp.text()
         console.log('[DEBUG] Auth validation failed. Status:', authResp.status, 'Body:', errBody)
-        return jsonError(res, 401, `Unauthorized: Supabase Auth error ${authResp.status}`)
+        return jsonError(res, 401, `Sesi login tidak valid (Supabase: ${authResp.status}). Silakan login ulang.`)
     }
     
     const user = await authResp.json()
     const userId = user?.id
     console.log('[DEBUG] Authenticated User ID:', userId)
     
-    if (!userId) return jsonError(res, 401, 'Unauthorized: No User ID found in token')
+    if (!userId) return jsonError(res, 401, 'ID Pengguna tidak ditemukan dalam token.')
 
     // 2) Check admin flag in profiles (service role, server-side only)
-    console.log('[DEBUG] Querying profiles for isAdmin...')
-    const rows = await supabaseRest('profiles', {
-      query: `select=is_admin&id=eq.${encodeURIComponent(userId)}&limit=1`,
-      useService: true,
-    })
+    console.log('[DEBUG] Querying profiles for isAdmin for ID:', userId)
+    let rows
+    try {
+        rows = await supabaseRest('profiles', {
+            query: `select=is_admin&id=eq.${encodeURIComponent(userId)}&limit=1`,
+            useService: true,
+        })
+    } catch (dbErr) {
+        console.error('[DEBUG] Database profile check failed:', dbErr.message)
+        return jsonError(res, 500, 'Gagal memverifikasi status Admin di database.', dbErr.message)
+    }
     
     console.log('[DEBUG] Query result:', JSON.stringify(rows))
     
     const isAdmin = Array.isArray(rows) && rows[0] && (rows[0].is_admin === true || rows[0].is_admin === 'true')
     console.log('[DEBUG] isAdmin check:', isAdmin)
     
-    if (!isAdmin) return jsonError(res, 403, 'Forbidden')
+    if (!isAdmin) {
+        return jsonError(res, 403, 'Anda bukan Admin. Akses ditolak.')
+    }
 
     req.user = { id: userId, email: user?.email || null }
 
     next()
   } catch (e) {
-    console.error('[DEBUG] Error in requireAdmin:', e.message)
-    jsonError(res, 401, 'Unauthorized', e.details || e.message)
+    console.error('[DEBUG] Error in requireAdmin Middleware:', e.message)
+    jsonError(res, 401, 'Unauthorized: ' + e.message)
   }
 }
 
