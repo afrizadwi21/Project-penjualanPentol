@@ -29,12 +29,12 @@ router.get('/check-history', async (req, res) => {
 
     if (phone) {
       const normalized = normalizePhone(phone)
-      // Menggunakan % sebagai wildcard standar SQL
-      const filter = `customer_phone=ilike.%${normalized}%`
+      // Menggunakan * sebagai wildcard PostgREST
+      const filter = `customer_phone=ilike.*${normalized}*`
       queryOrder = filter
       queryPreorder = filter
     } else if (name) {
-      const filter = `customer_name=ilike.%${name}%`
+      const filter = `customer_name=ilike.*${name}*`
       queryOrder = filter
       queryPreorder = filter
     }
