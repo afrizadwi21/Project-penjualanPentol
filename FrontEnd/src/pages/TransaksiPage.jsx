@@ -15,6 +15,12 @@ const toWaHref = (value) => {
   return `https://wa.me/${normalized}`
 }
 
+const generateAdminWaLink = (identitas, qtyBeli, tipe) => {
+  const adminWa = '6281339529934'
+  const text = `Halo Admin, saya ingin konfirmasi pesanan:\n\nNama: ${identitas.nama}\nNomor: ${identitas.telepon}\nKelas: ${identitas.kelas}\nJurusan: ${identitas.jurusan}\nJumlah Beli: ${qtyBeli} porsi\nTipe: ${tipe}`
+  return `https://wa.me/${adminWa}?text=${encodeURIComponent(text)}`
+}
+
 const renderInputIdentitas = (identitas, setIdentitas) => (
   <div className="space-y-3 mb-6 pb-6 border-b border-gray-800">
     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-3">Identitas Pembeli</p>
@@ -99,7 +105,15 @@ const TransaksiPage = () => {
       const orders = JSON.parse(localStorage.getItem('orders') || '[]')
       orders.push({ id: no, type: 'Order', ...identitas, produk: PRODUK.nama, qty, total, waktu: new Date().toLocaleTimeString('id-ID'), status: 'Selesai' })
       localStorage.setItem('orders', JSON.stringify(orders))
+      
+      // Auto-fill riwayat
+      localStorage.setItem('lastCheckedPhone', identitas.telepon)
+      localStorage.setItem('lastCheckedName', identitas.nama)
+
       window.dispatchEvent(new Event('orders-updated'))
+
+      // Langsung beralih ke WhatsApp
+      window.open(generateAdminWaLink(identitas, qty, 'Order Langsung'), '_blank')
     }).catch((err) => {
       console.error('[DEBUG] Order failed:', err)
       alert('Gagal mengirim pesanan ke database: ' + err.message)
@@ -146,7 +160,15 @@ const TransaksiPage = () => {
         status: 'Menunggu Pembayaran',
       })
       localStorage.setItem('preorders', JSON.stringify(pos))
+      
+      // Auto-fill riwayat
+      localStorage.setItem('lastCheckedPhone', identitas.telepon)
+      localStorage.setItem('lastCheckedName', identitas.nama)
+
       window.dispatchEvent(new Event('preorders-updated'))
+
+      // Langsung beralih ke WhatsApp
+      window.open(generateAdminWaLink(identitas, qtyPO, 'Pre-Order'), '_blank')
     }).catch((err) => {
       console.error('[DEBUG] Preorder failed:', err)
       alert('Gagal mengirim pre-order ke database: ' + err.message)
