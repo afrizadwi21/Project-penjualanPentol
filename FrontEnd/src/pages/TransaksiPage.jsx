@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import PentolImg from '../assets/Pentol.png'
+import QrisImg from '../assets/qris.jpeg'
 import AppSidebar from '../components/AppSidebar'
 import { apiFetch } from '../lib/api'
 
@@ -273,7 +274,10 @@ const TransaksiPage = () => {
               <div className="flex justify-between text-green-400"><span>Bayar</span><span>{fmt(uang)}</span></div>
               <div className="flex justify-between text-orange-400 text-xl font-black"><span>Kembalian</span><span>{fmt(kembalian)}</span></div>
             </div>
-            <button onClick={reset} className="w-full bg-red-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm">Selesai</button>
+            <a href={generateAdminWaLink(identitas, qty, 'Order Langsung')} target="_blank" rel="noreferrer" className="block w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm mb-3">
+              Konfirmasi WhatsApp
+            </a>
+            <button onClick={reset} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm transition-colors">Selesai</button>
           </div>
         </div>
       </div>
@@ -311,7 +315,10 @@ const TransaksiPage = () => {
               <div className="flex justify-between font-black text-white text-xl"><span>Total PO</span><span>{fmt(totalPO)}</span></div>
             </div>
             <p className="text-yellow-400 text-xs mb-6 font-bold">Pembayaran dilakukan saat pengambilan produk</p>
-            <button onClick={reset} className="w-full bg-red-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm">Selesai</button>
+            <a href={generateAdminWaLink(identitas, qtyPO, 'Pre-Order')} target="_blank" rel="noreferrer" className="block w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm mb-3">
+              Konfirmasi WhatsApp
+            </a>
+            <button onClick={reset} className="w-full bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-sm transition-colors">Selesai</button>
           </div>
         </div>
       </div>
@@ -524,8 +531,11 @@ const TransaksiPage = () => {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-blue-300">QRIS Pembayaran</p>
               <button onClick={closeQrisModal} className="text-gray-400 hover:text-white text-xl font-black">×</button>
             </div>
-            <div className="bg-white rounded-2xl p-4 flex items-center justify-center">
-              <img src={PRODUK.image} alt="QRIS" className="w-56 h-56 object-contain" />
+            <div className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center">
+              <img src={QrisImg} alt="QRIS" className="w-56 h-56 object-contain" />
+              <a href={QrisImg} download="qris.jpeg" className="mt-6 w-full text-center px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/30">
+                Download QRIS
+              </a>
             </div>
             <p className="mt-4 text-xs text-gray-400">
               Silakan scan QRIS. Popup ini otomatis tertutup dalam <span className="text-blue-300 font-black">{Math.floor(qrisTimer / 60)}:{String(qrisTimer % 60).padStart(2, '0')}</span> atau klik X.
