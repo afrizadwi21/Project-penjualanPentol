@@ -47,16 +47,18 @@ const LandingPage = () => {
                             <div className="font-black text-sm text-red-500 tracking-widest">MERCON</div>
                         </div>
                     </div>
-                    <div className="hidden md:flex items-center gap-6 text-sm font-semibold uppercase tracking-wider">
-                        <a href="#branding" className={`transition-colors ${navLink}`}>Branding</a>
-                        <a href="#menu" className={`transition-colors ${navLink}`}>Menu</a>
-                        <a href="#cara-pesan" className={`transition-colors ${navLink}`}>Panduan</a>
-                        <Link to="/riwayat" className={`transition-colors ${navLinkHover}`}>Riwayat</Link>
-                        <Link to="/transaksi" className={`px-4 py-2 rounded-lg border transition-colors ${borderBtn}`}>Order</Link>
-                        <Link to="/admin/login" className={`px-4 py-2 rounded-lg border transition-colors ${adminBtn}`}>Admin</Link>
+                    <div className="flex items-center gap-4">
+                        <div className="hidden md:flex items-center gap-6 text-sm font-semibold uppercase tracking-wider">
+                            <a href="#branding" className={`transition-colors ${navLink}`}>Branding</a>
+                            <a href="#menu" className={`transition-colors ${navLink}`}>Menu</a>
+                            <a href="#cara-pesan" className={`transition-colors ${navLink}`}>Panduan</a>
+                            <Link to="/riwayat" className={`transition-colors ${navLinkHover}`}>Riwayat</Link>
+                            <Link to="/transaksi" className={`px-4 py-2 rounded-lg border transition-colors ${borderBtn}`}>Order</Link>
+                            <Link to="/admin/login" className={`px-4 py-2 rounded-lg border transition-colors ${adminBtn}`}>Admin</Link>
+                        </div>
                         
-                        {/* THEME TOGGLE */}
-                        <button onClick={toggleTheme} className={`ml-2 p-2 rounded-full border transition-all ${isDark ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`} title="Mode Siang / Malam">
+                        {/* THEME TOGGLE (Always visible) */}
+                        <button onClick={toggleTheme} className={`p-2 rounded-full border transition-all ${isDark ? 'bg-gray-800 border-gray-700 text-yellow-400 hover:bg-gray-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'}`} title="Mode Siang / Malam">
                             {isDark ? '🌙' : '☀️'}
                         </button>
                     </div>
