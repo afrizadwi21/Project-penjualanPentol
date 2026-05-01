@@ -59,7 +59,7 @@ const LandingPage = () => {
                             <Link to="/transaksi" className={`px-4 py-2 rounded-lg border transition-colors ${borderBtn}`}>Order</Link>
                             <Link to="/admin/login" className={`px-4 py-2 rounded-lg border transition-colors ${adminBtn}`}>Admin</Link>
                         </div>
-                        
+
                         {/* MOBILE LINKS */}
                         <div className="flex md:hidden items-center gap-3 text-sm font-semibold uppercase tracking-wider">
                             <Link to="/riwayat" className={`transition-colors ${navLinkHover}`}>Riwayat</Link>
@@ -174,6 +174,7 @@ const LandingPage = () => {
                     </div>
 
                     <p className="text-gray-500 text-xs tracking-widest font-semibold uppercase">© 2026 Pentol Mercon. All rights reserved.</p>
+                    <p className="text-gray-500 text-xs tracking-widest font-semibold uppercase">afriza.</p>
                 </div>
             </footer>
         </div>
