@@ -81,7 +81,7 @@ const TransaksiPage = () => {
     if (!/^[0-9]{9,13}$/.test(String(identitas.telepon).replace(/\D/g, ''))) return alert('Nomor telepon tidak valid (9-13 digit)!')
     if (qty === 0) return alert('Pilih jumlah produk!')
     if (uang < total) return alert('Uang kurang!')
-    
+
     // Kirim ke backend (Supabase)
     const productId = import.meta.env.VITE_DEFAULT_PRODUCT_ID || 'PENTOL-001'
     console.log('[DEBUG] Sending order to backend with product_id:', productId)
@@ -101,12 +101,12 @@ const TransaksiPage = () => {
       const no = '#ORD' + Math.floor(Math.random() * 90000 + 10000)
       setNoStruk(no)
       setSukses(true)
-      
+
       // Simpan ke localStorage juga untuk fallback riwayat lokal
       const orders = JSON.parse(localStorage.getItem('orders') || '[]')
       orders.push({ id: no, type: 'Order', ...identitas, produk: PRODUK.nama, qty, total, waktu: new Date().toLocaleTimeString('id-ID'), status: 'Selesai' })
       localStorage.setItem('orders', JSON.stringify(orders))
-      
+
       // Auto-fill riwayat
       localStorage.setItem('lastCheckedPhone', identitas.telepon)
       localStorage.setItem('lastCheckedName', identitas.nama)
@@ -125,13 +125,13 @@ const TransaksiPage = () => {
     if (!identitas.nama || !identitas.telepon || !identitas.kelas || !identitas.jurusan) return alert('Isi nama, nomor telepon, kelas, dan jurusan terlebih dahulu!')
     if (!/^[0-9]{9,13}$/.test(String(identitas.telepon).replace(/\D/g, ''))) return alert('Nomor telepon tidak valid (9-13 digit)!')
     if (qtyPO === 0) return alert('Pilih jumlah produk!')
-    
+
     // Kirim ke backend (Supabase)
     const productId = import.meta.env.VITE_DEFAULT_PRODUCT_ID || 'PENTOL-001'
     console.log('[DEBUG] Sending preorder to backend with product_id:', productId)
 
     if (poPayMethod === 'qris' && !buktiBayarData) return alert('Silakan upload bukti pembayaran QRIS terlebih dahulu!')
-    
+
     apiFetch('/api/preorders', {
       method: 'POST',
       body: {
@@ -161,7 +161,7 @@ const TransaksiPage = () => {
         status: 'Menunggu Pembayaran',
       })
       localStorage.setItem('preorders', JSON.stringify(pos))
-      
+
       // Auto-fill riwayat
       localStorage.setItem('lastCheckedPhone', identitas.telepon)
       localStorage.setItem('lastCheckedName', identitas.nama)
@@ -475,7 +475,7 @@ const TransaksiPage = () => {
                           onClick={openQrisModal}
                           className="w-full px-4 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-[0.2em] transition-all"
                         >
-                          Tampilkan QRIS 
+                          Tampilkan QRIS
                         </button>
                       )}
                       <div className="bg-gray-900 border border-gray-700 rounded-2xl p-4">
@@ -548,3 +548,5 @@ const TransaksiPage = () => {
 }
 
 export default TransaksiPage
+// pembuat muhammad afriza dwi isnandarsyah
+//github afrizadwi21
