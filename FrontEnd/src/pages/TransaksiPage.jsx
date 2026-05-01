@@ -6,7 +6,7 @@ import { apiFetch } from '../lib/api'
 
 const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
-const PRODUK = { id: 1, nama: 'Pentol Mercon', harga: 5000, image: PentolImg }
+const PRODUK = { id: 1, nama: 'Pentol Mercon', harga: 7000, image: PentolImg }
 const getCurrentRole = () => localStorage.getItem('currentRole') || 'pelanggan'
 const QRIS_DURATION_SECONDS = 5 * 60
 const toWaHref = (value) => {

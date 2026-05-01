@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.3",
+    "aos": "^2.3.4",
     "chart.js": "^4.5.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
