@@ -149,7 +149,8 @@ const LandingPage = () => {
                         <div className={`rounded-3xl p-8 max-w-sm w-full shadow-2xl border transition-colors ${cardBg}`}>
                             <img src={pentolImg} alt="Pentol Mercon" className="w-full h-64 object-contain mb-6" />
                             <h3 className={`font-black text-2xl mb-2 ${textBrand}`}>Pentol Mercon</h3>
-                            <p className="text-red-500 font-black text-3xl mb-6">Rp 8.000</p>
+                            <p className="text-red-500 font-black text-3xl mb-2">Rp 8.000</p>
+                            <p className={`text-sm font-medium mb-6 uppercase tracking-wider ${heroTextDesc}`}>Isi 8 (5 Baso + 3 Cilok Keju) dengan Bumbu Kuah</p>
                             <Link to="/transaksi" className="block w-full bg-red-600 text-white font-black py-4 rounded-2xl hover:bg-red-500 transition-colors shadow-lg shadow-red-600/20">BELI SEKARANG</Link>
                         </div>
                     </div>

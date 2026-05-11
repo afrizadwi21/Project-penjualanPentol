@@ -351,7 +351,10 @@ const TransaksiPage = () => {
               <img src={PRODUK.image} alt={PRODUK.nama} className="w-full h-56 object-contain mb-5" />
               <h3 className="font-black text-white text-xl text-center uppercase tracking-wider">{PRODUK.nama}</h3>
               <p className="text-red-500 font-black text-3xl text-center mt-1">{fmt(PRODUK.harga)}</p>
-              <p className="text-gray-600 text-[10px] font-bold text-center mt-2 uppercase tracking-widest">per porsi</p>
+              <p className="text-gray-400 text-[11px] font-bold text-center mt-3 uppercase tracking-[0.2em] leading-relaxed">
+                Isi 8 (5 Baso + 3 Cilok Keju)<br/>dengan Bumbu Kuah
+              </p>
+              <p className="text-gray-600 text-[10px] font-bold text-center mt-4 uppercase tracking-widest">per porsi</p>
             </div>
           </div>
 
@@ -373,7 +376,8 @@ const TransaksiPage = () => {
                 <img src={PRODUK.image} alt={PRODUK.nama} className="w-16 h-16 object-contain" />
                 <div>
                   <p className="font-black text-sm">{PRODUK.nama}</p>
-                  <p className="text-red-500 font-black">{fmt(PRODUK.harga)}</p>
+                  <p className="text-red-500 font-black mb-1">{fmt(PRODUK.harga)}</p>
+                  <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Isi 8 (5 Baso + 3 Cilok Keju)</p>
                 </div>
               </div>
 
