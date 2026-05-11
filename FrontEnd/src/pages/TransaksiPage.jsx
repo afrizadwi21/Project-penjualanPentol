@@ -58,6 +58,7 @@ const TransaksiPage = () => {
   const [qty, setQty] = useState(0)
   const [uangDiterima, setUangDiterima] = useState('')
   const [sukses, setSukses] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [noStruk, setNoStruk] = useState('')
 
   // Pre-order state
@@ -81,6 +82,9 @@ const TransaksiPage = () => {
     if (!/^[0-9]{9,13}$/.test(String(identitas.telepon).replace(/\D/g, ''))) return alert('Nomor telepon tidak valid (9-13 digit)!')
     if (qty === 0) return alert('Pilih jumlah produk!')
     if (uang < total) return alert('Uang kurang!')
+    if (isLoading) return
+
+    setIsLoading(true)
 
     // Kirim ke backend (Supabase)
     const productId = import.meta.env.VITE_DEFAULT_PRODUCT_ID || 'PENTOL-001'
@@ -118,6 +122,8 @@ const TransaksiPage = () => {
     }).catch((err) => {
       console.error('[DEBUG] Order failed:', err)
       alert('Gagal mengirim pesanan ke database: ' + err.message)
+    }).finally(() => {
+      setIsLoading(false)
     })
   }
 
@@ -125,12 +131,11 @@ const TransaksiPage = () => {
     if (!identitas.nama || !identitas.telepon || !identitas.kelas || !identitas.jurusan) return alert('Isi nama, nomor telepon, kelas, dan jurusan terlebih dahulu!')
     if (!/^[0-9]{9,13}$/.test(String(identitas.telepon).replace(/\D/g, ''))) return alert('Nomor telepon tidak valid (9-13 digit)!')
     if (qtyPO === 0) return alert('Pilih jumlah produk!')
-
-    // Kirim ke backend (Supabase)
-    const productId = import.meta.env.VITE_DEFAULT_PRODUCT_ID || 'PENTOL-001'
-    console.log('[DEBUG] Sending preorder to backend with product_id:', productId)
+    if (isLoading) return
 
     if (poPayMethod === 'qris' && !buktiBayarData) return alert('Silakan upload bukti pembayaran QRIS terlebih dahulu!')
+
+    setIsLoading(true)
 
     apiFetch('/api/preorders', {
       method: 'POST',
@@ -173,6 +178,8 @@ const TransaksiPage = () => {
     }).catch((err) => {
       console.error('[DEBUG] Preorder failed:', err)
       alert('Gagal mengirim pre-order ke database: ' + err.message)
+    }).finally(() => {
+      setIsLoading(false)
     })
   }
 
@@ -421,9 +428,9 @@ const TransaksiPage = () => {
                     </div>
                   )}
 
-                  <button onClick={prosesOrder} disabled={qty === 0 || kembalian < 0 || !uangDiterima}
+                  <button onClick={prosesOrder} disabled={qty === 0 || kembalian < 0 || !uangDiterima || isLoading}
                     className="w-full bg-red-600 hover:bg-red-500 disabled:bg-gray-800 disabled:text-gray-600 py-5 rounded-2xl font-black transition-all uppercase tracking-[0.3em] text-sm shadow-xl shadow-red-900/20">
-                    Pesan Sekarang
+                    {isLoading ? 'Memproses...' : 'Pesan Sekarang'}
                   </button>
                 </div>
               )}
@@ -518,9 +525,9 @@ const TransaksiPage = () => {
                     <span>{fmt(totalPO)}</span>
                   </div>
 
-                  <button onClick={prosesPO} disabled={qtyPO === 0}
+                  <button onClick={prosesPO} disabled={qtyPO === 0 || isLoading}
                     className="w-full bg-yellow-500 hover:bg-yellow-400 disabled:bg-gray-800 disabled:text-gray-600 text-gray-950 py-5 rounded-2xl font-black transition-all uppercase tracking-[0.3em] text-sm shadow-xl shadow-yellow-900/20">
-                    {poPayMethod === 'qris' ? 'Kirim Bukti Pembayaran' : 'Konfirmasi Pre-Order'}
+                    {isLoading ? 'Memproses...' : (poPayMethod === 'qris' ? 'Kirim Bukti Pembayaran' : 'Konfirmasi Pre-Order')}
                   </button>
                 </div>
               )}
